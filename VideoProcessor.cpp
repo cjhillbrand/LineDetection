@@ -25,7 +25,14 @@ VideoProcessor::~VideoProcessor() {
 }
 
 void VideoProcessor::process() {
-    printf("Process function not implemented yet");
+    Mat frame;
+    Mat preHough;
+    Mat result;
+    while (retrieveNextFrame(frame) != EXIT_CODE) {
+	proc -> preProcess(frame, preHough);
+	proc -> houghLineTransform(preHough, result);
+	showFrame(result);
+    }
 }
 
 int VideoProcessor::retrieveNextFrame(Mat& frame) {
