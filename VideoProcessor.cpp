@@ -27,12 +27,11 @@ VideoProcessor::~VideoProcessor() {
 void VideoProcessor::process() {
     Mat frame;
     Mat preHough;
-    Mat result;
     while (retrieveNextFrame(frame) != EXIT_CODE) {
-//	proc -> preProcess(frame, preHough);
-//	proc -> houghLineTransform(preHough, result);
-//	showFrame(result);
-	showFrame(frame); // Just to show that it works
+	proc -> preProcess(frame, preHough);
+	Mat result(frame);
+	proc -> houghLineTransform(preHough, result);
+	showFrame(result);
     }
 }
 
