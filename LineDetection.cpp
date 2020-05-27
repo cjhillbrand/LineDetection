@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <cstring>
 
+#include "VideoProcessor.h"
+
 int main(int argc, char* argv[]) {
     // Entry point for the Line Detection algorithm 
     // First we parse through the flags that are given
@@ -36,6 +38,8 @@ int main(int argc, char* argv[]) {
 		exit(EXIT_FAILURE);
 	}
     }
-
+    VideoProcessor vp(file, cannyCPU, houghCPU);
+    vp.process();
+    exit(0);
 
 }

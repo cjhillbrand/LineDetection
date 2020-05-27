@@ -1,4 +1,5 @@
 #include <opencv2/core.hpp>
+#include <iostream>
 using namespace cv;
 
 #ifndef IMAGE_PROCESSOR

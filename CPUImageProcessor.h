@@ -2,11 +2,12 @@
 
 #ifndef CPU_IMAGE_PROCESSOR
 #define CPU_IMAGE_PROCESSOR
-class CPUImageProcessor {
+class CPUImageProcessor : public ImageProcessor {
     public:
-	override void preProcess(const Mat&, Mat&);
-	override void houghLineTransform(const Mat&, Mat&);
-}
+	CPUImageProcessor();
+	void preProcess(const Mat&, Mat&) override; 
+	void houghLineTransform(const Mat&, Mat&) override;
+};
 
 
 
