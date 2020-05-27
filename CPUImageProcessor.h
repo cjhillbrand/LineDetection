@@ -1,4 +1,7 @@
 #include "ImageProcessor.h"
+#include <vector>
+using namespace std;
+using namespace cv;
 
 #ifndef CPU_IMAGE_PROCESSOR
 #define CPU_IMAGE_PROCESSOR

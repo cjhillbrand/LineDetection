@@ -7,7 +7,7 @@ CPUImageProcessor::CPUImageProcessor() {
 void CPUImageProcessor::preProcess(const Mat& frame, Mat& result) {
     // Change to black and white
     Mat greyImg;
-    cvtColor(frame, greyImg, CV_RGB2GRAY);
+    cvtColor(frame, greyImg, COLOR_RGB2GRAY);
     
     // Apply smoothing kernel
     Mat smoothImg;
