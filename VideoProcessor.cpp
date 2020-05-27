@@ -29,9 +29,10 @@ void VideoProcessor::process() {
     Mat preHough;
     Mat result;
     while (retrieveNextFrame(frame) != EXIT_CODE) {
-	proc -> preProcess(frame, preHough);
-	proc -> houghLineTransform(preHough, result);
-	showFrame(result);
+//	proc -> preProcess(frame, preHough);
+//	proc -> houghLineTransform(preHough, result);
+//	showFrame(result);
+	showFrame(frame); // Just to show that it works
     }
 }
 
@@ -41,5 +42,6 @@ int VideoProcessor::retrieveNextFrame(Mat& frame) {
 
 void VideoProcessor::showFrame(const Mat& frame) {
     imshow(windowName, frame);
+    waitKey(0);
     // May have to enter the "waitKey(0)" function call here... not sure.
 }

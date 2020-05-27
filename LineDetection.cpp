@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
     // -f -> if this flag is set then we read in the file
     bool cannyCPU = true;
     bool houghCPU = true;
-    char file[20] = "DEFAULT FILE NAME";
+    char file[40] = "./videos/LaneDetectionTest_01.mp4";
     int verbose = 1;
 
     int opt;
