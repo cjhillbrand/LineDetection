@@ -9,7 +9,7 @@ class CPUImageProcessor : public ImageProcessor {
     public:
 	CPUImageProcessor();
 	void preProcess(const Mat&, Mat&) override; 
-	void houghLineTransform(const Mat&, Mat&) override;
+	void houghLineTransform(Mat&, Mat&) override;
 };
 
 

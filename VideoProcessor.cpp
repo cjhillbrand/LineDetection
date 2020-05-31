@@ -29,15 +29,16 @@ void VideoProcessor::process() {
     Mat preHough;
     while (retrieveNextFrame(frame) != EXIT_CODE) {
 	Mat result(frame);
-	proc -> preProcess(frame, preHough);
-	showFrame(preHough);
-	proc -> houghLineTransform(preHough, result);
+	Mat cutFrame = frame(Rect(0, frame.rows - frame.rows/3, frame.cols, frame.rows/3));
+	proc -> preProcess(cutFrame, preHough);
+	imshow("PRE HOUGH", preHough);
+	proc -> houghLineTransform(preHough, frame);
 	showFrame(result);
     }
 }
 
 int VideoProcessor::retrieveNextFrame(Mat& frame) {
-    return video.read(frame) ? SUCC_CODE : EXIT_CODE;
+    return video.read(frame);
 }
 
 void VideoProcessor::showFrame(const Mat& frame) {

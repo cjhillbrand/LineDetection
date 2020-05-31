@@ -6,7 +6,7 @@ class GPUImageProcessor : public ImageProcessor {
     public:
 	GPUImageProcessor();
 	void preProcess(const Mat&, Mat&) override;
-	void houghLineTransform(const Mat&, Mat&) override;
+	void houghLineTransform(Mat&, Mat&) override;
 };
 
 

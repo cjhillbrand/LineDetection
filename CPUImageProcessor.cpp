@@ -5,38 +5,26 @@ CPUImageProcessor::CPUImageProcessor() {
 }
 
 void CPUImageProcessor::preProcess(const Mat& frame, Mat& result) {
-    // Apply smoothing kernel
-    Mat smoothImg;
-    GaussianBlur( frame, smoothImg, Size( 5, 5 ), 0, 0 );
+    Mat temp;
+    cvtColor(frame, temp, COLOR_RGB2GRAY);
     
-    Mat hsvImg;
-    cvtColor(smoothImg, hsvImg, COLOR_RGB2HSV);
+    // Apply smoothing kernel
+    GaussianBlur(temp, temp, Size( 5, 5 ), 0, 0 );
 
     // Attempt to mask image to extract white lines
-    Scalar lower(0, 0, 180), upper(180, 25, 255);
+    Scalar lower(200), upper(255);
 
-    Mat maskedImg;
-    inRange(hsvImg, lower, upper, maskedImg);
-
-    // Change to black and white
-    //Mat greyImg;
-    //cvtColor(maskedImg, greyImg, COLOR_HSV2GRAY);
-    //Mat hsvChannels[3];
-    //split(maskedImg, hsvChannels);
-    //Mat greyImg(hsvChannels[2]);
-    //imshow("BW", greyImg);
-    //waitKey(0);
-
+    inRange(temp, lower, upper, temp);
 		
     // Apply canny edge detector
-    int lowThreshold = 125;
+    int lowThreshold = 150;
     int ratio = 2.5;
     int kernel_size = 3;
-    Canny(maskedImg, result, lowThreshold, lowThreshold*ratio, kernel_size );
+    Canny(temp, result, lowThreshold, lowThreshold*ratio, kernel_size );
 
 }
 
-void CPUImageProcessor::houghLineTransform(const Mat& frame, Mat& result) {
+void CPUImageProcessor::houghLineTransform(Mat& frame, Mat& result) {
 	vector<Vec2f> lines; // will hold the results of the detection
 	HoughLines(frame, lines, 3, 2 * CV_PI/180, 120, 0, 0 ); // runs the actual detection
 	vector<Vec2f> uniqueLines;
@@ -47,27 +35,30 @@ void CPUImageProcessor::houghLineTransform(const Mat& frame, Mat& result) {
 	    float rho = curr[0];
 	    float theta = curr[1];
 	    
-	    for (Vec2f t : uniqueLines) {
-		float t_rho = t[0];
-		float t_theta = t[1];
+	    int uniqueLinesSize = uniqueLines.size();
+	    for (int i = 0; i < uniqueLinesSize; i++) {
+		float t_rho = uniqueLines[i][0];
+		float t_theta = uniqueLines[i][1];
 		if ((rho > t_rho + rho_threshold || rho < t_rho - rho_threshold) && 
-		    (theta > t_theta +theta_threshold || theta < t_theta - theta_threshold)) 
+		    (theta > t_theta +theta_threshold || theta < t_theta - theta_threshold)) { 
 		    uniqueLines.push_back(curr);
+		    break;
+		}
 	    }
 
 	}	
+	const int SHIFT_ROWS = frame.rows * 2;
 	// Draw the lines
+	for (Vec2f curr : uniqueLines) {
+	    float rho = curr[0], theta = curr[1];
 
-  for(Vec2f curr : uniqueLines) {
-    float rho = curr[0], theta = curr[1];
-
-    Point pt1, pt2;
-    double a = cos(theta), b = sin(theta);
-    double x0 = a*rho, y0 = b*rho;
-    pt1.x = cvRound(x0 + 1250*(-b));
-    pt1.y = cvRound(y0 + 1250*(a));
-    pt2.x = cvRound(x0 - 1250*(-b));
-    pt2.y = cvRound(y0 - 1250*(a));
-    line( result, pt1, pt2, Scalar(0,0,255), 3, LINE_AA);
-  }
+	    Point pt1, pt2;
+	    double a = cos(theta), b = sin(theta);
+	    double x0 = a*rho, y0 = b*rho;
+	    pt1.x = cvRound(x0 + 1250*(-b));
+	    pt1.y = cvRound(y0 + 1250*(a) + SHIFT_ROWS);
+	    pt2.x = cvRound(x0 - 1250*(-b));
+	    pt2.y = cvRound(y0 - 1250*(a) + SHIFT_ROWS);
+	    line( result, pt1, pt2, Scalar(0,0,255), 3, LINE_AA);
+	}
 }

@@ -9,7 +9,7 @@ using namespace cv;
 class ImageProcessor {
     public:
 	virtual void preProcess(const Mat&, Mat&) = 0;
-	virtual void houghLineTransform(const Mat&, Mat&) = 0;
+	virtual void houghLineTransform(Mat&, Mat&) = 0;
 };
 
 
