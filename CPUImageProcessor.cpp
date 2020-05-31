@@ -57,15 +57,17 @@ void CPUImageProcessor::houghLineTransform(const Mat& frame, Mat& result) {
 
 	}	
 	// Draw the lines
-    	for(Vec2f curr : uniqueLines) {
-	    float rho = curr[0], theta = curr[1];
-	    Point pt1, pt2;
-	    double a = cos(theta), b = sin(theta);
-	    double x0 = a*rho, y0 = b*rho;
-	    pt1.x = cvRound(x0 + 1250*(-b));
-	    pt1.y = cvRound(y0 + 1250*(a));
-	    pt2.x = cvRound(x0 - 1250*(-b));
-	    pt2.y = cvRound(y0 - 1250*(a));
-	    line( result, pt1, pt2, Scalar(0,0,255), 3, LINE_AA);
-    	}
+
+  for(Vec2f curr : uniqueLines) {
+    float rho = curr[0], theta = curr[1];
+
+    Point pt1, pt2;
+    double a = cos(theta), b = sin(theta);
+    double x0 = a*rho, y0 = b*rho;
+    pt1.x = cvRound(x0 + 1250*(-b));
+    pt1.y = cvRound(y0 + 1250*(a));
+    pt2.x = cvRound(x0 - 1250*(-b));
+    pt2.y = cvRound(y0 - 1250*(a));
+    line( result, pt1, pt2, Scalar(0,0,255), 3, LINE_AA);
+  }
 }
