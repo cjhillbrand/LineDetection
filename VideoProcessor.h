@@ -20,7 +20,9 @@ class VideoProcessor {
 	VideoCapture video;
 	int retrieveNextFrame(Mat&);
 	void showFrame(const Mat&);
-	ImageProcessor* proc;
+	ImageProcessor* cannyProc;
+	ImageProcessor* houghProc;
+
 	const bool cannyCPU;
 	const bool houghCPU;
 	const char* windowName;
