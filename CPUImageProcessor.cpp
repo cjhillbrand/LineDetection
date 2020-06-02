@@ -1,64 +1,54 @@
-#include "CPUImageProcessor.h"
+#include "VideoProcessor.h"
 
-CPUImageProcessor::CPUImageProcessor() {
-    printf("Not implemented yet");
-}
-
-void CPUImageProcessor::preProcess(const Mat& frame, Mat& result) {
-    Mat temp;
-    cvtColor(frame, temp, COLOR_RGB2GRAY);
+VideoProcessor::VideoProcessor(const char* file, const bool cannyCPU, const bool houghCPU) : 
+	cannyCPU(cannyCPU), houghCPU(houghCPU), windowName(file), video(VideoCapture()) {
     
-    // Apply smoothing kernel
-    GaussianBlur(temp, temp, Size( 5, 5 ), 0, 0 );
+    video.open(file);
+    
+    if (!video.isOpened()) {
+	fprintf(stderr, "Unable to open video %s... Exiting\n", file);
+	exit(EXIT_FAILURE);
+    }
+    
+    if (cannyCPU || houghCPU)  // Going to have to change the logic bc what if one is
+    // true and another is false?
+	proc = new CPUImageProcessor();
+    else
+	proc = new GPUImageProcessor();
 
-    // Attempt to mask image to extract white lines
-    Scalar lower(200), upper(255);
-
-    inRange(temp, lower, upper, temp);
-		
-    // Apply canny edge detector
-    int lowThreshold = 150;
-    int ratio = 2.5;
-    int kernel_size = 3;
-    Canny(temp, result, lowThreshold, lowThreshold*ratio, kernel_size );
-
+    // Create the window that we will display the image to.
+    namedWindow(windowName, WINDOW_AUTOSIZE);
 }
 
-void CPUImageProcessor::houghLineTransform(Mat& frame, Mat& result) {
-	vector<Vec2f> lines; // will hold the results of the detection
-	HoughLines(frame, lines, 3, 2 * CV_PI/180, 120, 0, 0 ); // runs the actual detection
-	vector<Vec2f> uniqueLines;
-	uniqueLines.push_back(lines.front());
-	float rho_threshold = 50;
-	float theta_threshold = CV_PI/6;
-	for (Vec2f curr : lines) {
-	    float rho = curr[0];
-	    float theta = curr[1];
-	    
-	    int uniqueLinesSize = uniqueLines.size();
-	    for (int i = 0; i < uniqueLinesSize; i++) {
-		float t_rho = uniqueLines[i][0];
-		float t_theta = uniqueLines[i][1];
-		if ((rho > t_rho + rho_threshold || rho < t_rho - rho_threshold) && 
-		    (theta > t_theta +theta_threshold || theta < t_theta - theta_threshold)) { 
-		    uniqueLines.push_back(curr);
-		    break;
-		}
-	    }
+VideoProcessor::~VideoProcessor() {
+    delete proc;
+}
 
-	}	
-	const int SHIFT_ROWS = frame.rows * 2;
-	// Draw the lines
-	for (Vec2f curr : uniqueLines) {
-	    float rho = curr[0], theta = curr[1];
+void VideoProcessor::process() {
+    Mat frame;
+    Mat preHough;
 
-	    Point pt1, pt2;
-	    double a = cos(theta), b = sin(theta);
-	    double x0 = a*rho, y0 = b*rho;
-	    pt1.x = cvRound(x0 + 1250*(-b));
-	    pt1.y = cvRound(y0 + 1250*(a) + SHIFT_ROWS);
-	    pt2.x = cvRound(x0 - 1250*(-b));
-	    pt2.y = cvRound(y0 - 1250*(a) + SHIFT_ROWS);
-	    line( result, pt1, pt2, Scalar(0,0,255), 3, LINE_AA);
-	}
+    while (retrieveNextFrame(frame) != EXIT_CODE) {
+	    Mat result(frame);
+   
+        const int cols = frame.cols;
+        const int rows = frame.rows;
+
+        Mat cutFrame = frame(Rect(0, frame.rows - frame.rows / 3, frame.cols, frame.rows / 3));
+
+	    proc -> preProcess(cutFrame, preHough);
+	    imshow("PRE HOUGH", preHough);
+	    proc -> houghLineTransform(preHough, frame);
+	    showFrame(result);
+    }
+}
+
+int VideoProcessor::retrieveNextFrame(Mat& frame) {
+    return video.read(frame);
+}
+
+void VideoProcessor::showFrame(const Mat& frame) {
+    imshow(windowName, frame);
+    waitKey(0);
+    // May have to enter the "waitKey(0)" function call here... not sure.
 }
