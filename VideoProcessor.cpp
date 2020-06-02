@@ -10,18 +10,28 @@ VideoProcessor::VideoProcessor(const char* file, const bool cannyCPU, const bool
 	exit(EXIT_FAILURE);
     }
     
-    if (cannyCPU || houghCPU)  // Going to have to change the logic bc what if one is
-    // true and another is false?
-	proc = new CPUImageProcessor();
-    else
-	proc = new GPUImageProcessor();
+    if (cannyCPU) {
+        cannyProc = new CPUImageProcessor();
+    }
+    else {
+        cannyProc = new GPUImageProcessor();
+    }
+
+    if (houghCPU) {
+        houghProc = new CPUImageProcessor();
+    }
+    else {
+        houghProc = new GPUImageProcessor();
+    }
 
     // Create the window that we will display the image to.
     namedWindow(windowName, WINDOW_AUTOSIZE);
 }
 
 VideoProcessor::~VideoProcessor() {
-    delete proc;
+    delete cannyProc;
+    delete houghProc;
+
 }
 
 void VideoProcessor::process() {
@@ -30,9 +40,9 @@ void VideoProcessor::process() {
     while (retrieveNextFrame(frame) != EXIT_CODE) {
 	Mat result(frame);
 	Mat cutFrame = frame(Rect(0, frame.rows - frame.rows/3, frame.cols, frame.rows/3));
-	proc -> preProcess(cutFrame, preHough);
+	cannyProc -> preProcess(cutFrame, preHough);
 	imshow("PRE HOUGH", preHough);
-	proc -> houghLineTransform(preHough, frame);
+	houghProc -> houghLineTransform(preHough, frame);
 	showFrame(result);
     }
 }
