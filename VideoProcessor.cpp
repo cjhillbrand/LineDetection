@@ -36,10 +36,10 @@ VideoProcessor::~VideoProcessor() {
 
 void VideoProcessor::process() {
     Mat frame;
-    Mat preHough;
     while (retrieveNextFrame(frame) != EXIT_CODE) {
 	Mat result(frame);
 	Mat cutFrame = frame(Rect(0, frame.rows - frame.rows/3, frame.cols, frame.rows/3));
+    Mat preHough(cutFrame.rows, cutFrame.cols, CV_8UC1);
 	cannyProc -> preProcess(cutFrame, preHough);
 	imshow("PRE HOUGH", preHough);
 	houghProc -> houghLineTransform(preHough, frame);
