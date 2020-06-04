@@ -121,6 +121,19 @@ __global__ void threshold(const uchar* input, uchar* output, const int rows, con
     }
 }
 
+__global__ void sobelGradientMagnitude(uchar* output, const uchar* outputGx, const uchar* outputGy, const uchar* maskGx, const uchar* maskGy,
+                    const int rows, const int cols) {
+    const int row = blockIdx.y * blockDim.y + threadIdx.y;
+    const int col = blockIdx.x * blockDim.x + threadIdx.x;
+    const int idx = row * cols + col;
+
+    if (row < rows && col < cols) {
+        output[idx] = static_cast<uchar>(sqrt(pow(maskGx[idx]
+            == 1 ? -static_cast<float>(outputGx[idx]) : static_cast<float>(outputGx[idx]), 2)
+            + pow(maskGy[idx] == 1 ? -static_cast<float>(outputGy[idx]) : static_cast<float>(outputGy[idx]), 2)));
+    }
+}
+
 GPUImageProcessor::GPUImageProcessor() {
     printf("Not implemented yet");
 }
@@ -178,7 +191,7 @@ void GPUImageProcessor::preProcess(const Mat& frame, Mat& output) {
 
 void GPUImageProcessor::GPUImageEdge(const Mat& input, Mat& output) {
     const int rows = input.rows, cols = input.cols;
-    uchar* d_input, *d_kernelGx, *d_kernelGy, * d_maskGx, *d_maskGy, *d_outputGx, *d_outputGy;
+    uchar* d_input, *d_output, *d_kernelGx, *d_kernelGy, * d_maskGx, *d_maskGy, *d_outputGx, *d_outputGy;
     const int size = rows * cols;
     const int reduction = 1;
 
@@ -226,7 +239,13 @@ void GPUImageProcessor::GPUImageEdge(const Mat& input, Mat& output) {
     cudaFree(d_kernelGy);
     cudaFree(d_input);
 
-    
+    // sqrt(Gx^2 + Gy^2
+    cudaMalloc(&d_output, size);
+
+    sobelGradientMagnitude << <blocks, threads >> > (d_output, d_outputGx, d_outputGy, d_maskGx, d_maskGy, rows, cols);
+    cudaDeviceSynchronize();
+
+    /*
     // Process Gx and Gy
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
@@ -235,6 +254,9 @@ void GPUImageProcessor::GPUImageEdge(const Mat& input, Mat& output) {
                 + pow(maskGy.at<uchar>(i, j) == 1 ? -static_cast<float>(outputGy.at<uchar>(i, j)) : static_cast<float>(outputGy.at<uchar>(i, j)), 2)));
         }
     }
+    */
+
+    cudaMemcpy(output.ptr(), d_output, size, cudaMemcpyDeviceToHost);
 
     cudaFree(d_outputGx);
     cudaFree(d_outputGy);
