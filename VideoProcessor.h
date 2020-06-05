@@ -28,7 +28,6 @@ class VideoProcessor {
 	const char* windowName;
 	const int EXIT_CODE = -1;
 	const int SUCC_CODE = 1;
-
 };
 
 #endif
