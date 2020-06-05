@@ -11,17 +11,17 @@ VideoProcessor::VideoProcessor(const char* file, const bool cannyCPU, const bool
     }
     
     if (cannyCPU) {
-        cannyProc = new CPUImageProcessor();
+        cannyProc = new CPUImageProcessor("preprocessing_CPU.csv");
     }
     else {
-        cannyProc = new GPUImageProcessor();
+        cannyProc = new GPUImageProcessor("preprocessing_GPU.csv");
     }
 
     if (houghCPU) {
-        houghProc = new CPUImageProcessor();
+        houghProc = new CPUImageProcessor("hough_CPU.csv");
     }
     else {
-        houghProc = new GPUImageProcessor();
+        houghProc = new GPUImageProcessor("hough_GPU.csv");
     }
 
     // Create the window that we will display the image to.
@@ -36,14 +36,19 @@ VideoProcessor::~VideoProcessor() {
 
 void VideoProcessor::process() {
     Mat frame;
-    while (retrieveNextFrame(frame) != EXIT_CODE) {
-	Mat result(frame);
-	Mat cutFrame = frame(Rect(0, frame.rows - frame.rows/3, frame.cols, frame.rows/3));
-    Mat preHough(cutFrame.rows, cutFrame.cols, CV_8UC1);
-	cannyProc -> preProcess(cutFrame, preHough);
-	imshow("PRE HOUGH", preHough);
-	houghProc -> houghLineTransform(preHough, frame);
-	showFrame(result);
+    while (retrieveNextFrame(frame) != EXIT_CODE) { 
+        if (frame.empty()) {
+            break;
+        }
+	    Mat result(frame);
+	    // Mat cutFrame = frame(Rect(0, frame.rows - frame.rows/3, frame.cols, frame.rows/3));
+        Mat cutFrame = frame(Rect(frame.cols - 3 * frame.cols / 4, frame.rows - frame.rows / 4, frame.cols - frame.cols / 2, frame.rows / 4));
+
+        Mat preHough(cutFrame.rows, cutFrame.cols, CV_8UC1);
+	    cannyProc -> preProcess(cutFrame, preHough);
+	    //imshow("PRE HOUGH", preHough);
+	    houghProc -> houghLineTransform(preHough, frame);
+	    showFrame(result);
     }
 }
 
@@ -53,6 +58,6 @@ int VideoProcessor::retrieveNextFrame(Mat& frame) {
 
 void VideoProcessor::showFrame(const Mat& frame) {
     imshow(windowName, frame);
-    waitKey(0);
+    waitKey(1);
     // May have to enter the "waitKey(0)" function call here... not sure.
 }
