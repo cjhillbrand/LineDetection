@@ -1,10 +1,11 @@
 #include "ImageProcessor.h"
+#include <thread>
 
 #ifndef GPU_IMAGE_PROCESSOR
 #define GPU_IMAGE_PROCESSOR
 class GPUImageProcessor : public ImageProcessor {
 public:
-    GPUImageProcessor();
+    GPUImageProcessor(std::string);
     void preProcess(const Mat&, Mat&) override;
     void houghLineTransform(Mat&, Mat&) override;
 private:
@@ -20,8 +21,7 @@ private:
     void GPUImageSmooth(const Mat& input, Mat& output);
     void GPUImageGray(const Mat& input, Mat& output);
     void GPUImageEdge(const Mat& input, Mat& output);
+    void GPUImageThreshold(const Mat& input, Mat& output);
 };
-
-
 
 #endif
