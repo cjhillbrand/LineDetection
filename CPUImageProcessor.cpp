@@ -1,8 +1,6 @@
 #include "CPUImageProcessor.h"
 
-CPUImageProcessor::CPUImageProcessor() {
-    printf("Not implemented yet");
-}
+CPUImageProcessor::CPUImageProcessor(std::string filename) : ImageProcessor(filename) {}
 
 void CPUImageProcessor::preProcess(const Mat& frame, Mat& result) {
 	Mat temp;
@@ -22,7 +20,6 @@ void CPUImageProcessor::preProcess(const Mat& frame, Mat& result) {
     int ratio = 2.5;
     int kernel_size = 3;
     Canny(temp, result, lowThreshold, (double)lowThreshold*ratio, kernel_size );
-
 }
 
 void CPUImageProcessor::houghLineTransform(Mat& frame, Mat& result) {
@@ -30,22 +27,13 @@ void CPUImageProcessor::houghLineTransform(Mat& frame, Mat& result) {
 	HoughLinesP(frame, lines, 1, CV_PI/180, 40, 10, 250 ); // runs the actual detection
 	float rho_threshold = 50;
 	float theta_threshold = CV_PI/6;
-	const int SHIFT_ROWS = frame.rows * 2;
+	const int SHIFT_ROWS = frame.rows * 3;
+	const int SHIFT_COLS = frame.cols / 2;
 
 	// Draw the lines
 	for (Vec4i curr : lines) {
-	    float rho = curr[0], theta = curr[1];
-
-	    Point pt1, pt2;
-	    double a = cos(theta), b = sin(theta);
-	    double x0 = a*rho, y0 = b*rho;
-	    pt1.x = cvRound(x0 + 1250*(-b));
-	    pt1.y = cvRound(y0 + 1250*(a) + SHIFT_ROWS);
-	    pt2.x = cvRound(x0 - 1250*(-b));
-	    pt2.y = cvRound(y0 - 1250*(a) + SHIFT_ROWS);
-
 		// First function y = 3/5 x + 0, y = frame.rows / 4, y = -3/5 x + intercept : intercept = 3/5 * frame.cols
 		//if (y0 < frame.rows - 3 / 5 * x0 && y0 < frame.rows - frame.rows/4 && y0 < frame.rows - (-3/5 * x0 + 3/5 * frame.cols) ) {
-		line(result, Point(curr[0], curr[1] + SHIFT_ROWS), Point(curr[2], curr[3] + SHIFT_ROWS), Scalar(0, 0, 255), 3, LINE_AA);
+		line(result, Point(curr[0] + SHIFT_COLS, curr[1] + SHIFT_ROWS), Point(curr[2] + SHIFT_COLS, curr[3] + SHIFT_ROWS), Scalar(0, 0, 255), 3, LINE_AA);
 	}
 }
